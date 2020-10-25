@@ -5,11 +5,11 @@
  * board fills (tie)
  */
 
-class Game{
-  constructor(p1, p2, WIDTH = 7, HEIGHT = 6){
+class Game {
+  constructor(p1, p2, height = 6, width = 7) {
     this.players = [p1, p2];
-    this.WIDTH = WIDTH;
-    this.HEIGHT = HEIGHT;
+    this.height = height;
+    this.width = width;
     this.currPlayer = p1;
     this.makeBoard();
     this.makeHtmlBoard();
@@ -19,79 +19,79 @@ class Game{
  *   board = array of rows, each row is array of cells  (board[y][x])
  */
 
-makeBoard() {
-  this.board = [];  // array of rows, each row is array of cells  (board[y][x])
-  for (let y = 0; y < this.HEIGHT; y++) {
-    this.board.push(Array.from({ length: this.WIDTH }));
+  makeBoard() {
+    this.board = [];
+    for (let y = 0; y < this.height; y++) {
+      this.board.push(Array.from({ length: this.width }));
+    }
   }
-}
 
 /** makeHtmlBoard: make HTML table and row of column tops. */
 
-makeHtmlBoard() {
-  const board = document.getElementById('board');
-  board.innerHTML = '';
+  makeHtmlBoard(){
+    const board = document.getElementById('board');
+    board.innerHTML = '';
 
-  // make column tops (clickable area for adding a piece to that column)
-  const top = document.createElement('tr');
-  top.setAttribute('id', 'column-top');
+    // make column tops (clickable area for adding a piece to that column)
+    const top = document.createElement('tr');
+    top.setAttribute('id', 'column-top');
 
-  this.handleGameClick = this.handleClick.bind(this);
+    this.handleGameClick = this.handleClick.bind(this);
+    
+    top.addEventListener("click", this.handleGameClick);
 
-  top.addEventListener('click', this.handleGameClick); //When game start is clicked, it will load the board
-
-  for (let x = 0; x < this.WIDTH; x++) {
-    const headCell = document.createElement('td');
-    headCell.setAttribute('id', x);
-    top.append(headCell);
-  }
-
-  board.append(top);
-
-  // make main part of board
-  for (let y = 0; y < this.HEIGHT; y++) {
-    const row = document.createElement('tr');
-
-    for (let x = 0; x < this.WIDTH; x++) {
-      const cell = document.createElement('td');
-      cell.setAttribute('id', `${y}-${x}`);
-      row.append(cell);
+    for (let x = 0; x < this.width; x++) {
+      const headCell = document.createElement('td');
+      headCell.setAttribute('id', x);
+      top.append(headCell);
     }
 
-    board.append(row);
+    board.append(top);
+
+    // make main part of board
+    for (let y = 0; y < this.height; y++) {
+      const row = document.createElement('tr');
+    
+      for (let x = 0; x < this.width; x++) {
+        const cell = document.createElement('td');
+        cell.setAttribute('id', `${y}-${x}`);
+        row.append(cell);
+      }
+    
+      board.append(row);
+    }
   }
-}
 
 /** findSpotForCol: given column x, return top empty y (null if filled) */
 
-findSpotForCol(x) {
-  for (let y = this.HEIGHT - 1; y >= 0; y--) {
-    if (!this.board[y][x]) {
-      return y;
+  findSpotForCol(x) {
+    for (let y = this.height - 1; y >= 0; y--) {
+      if (!this.board[y][x]) {
+        return y;
+      }
     }
+    return null;
   }
-  return null;
-}
 
 /** placeInTable: update DOM to place piece into HTML table of board */
 
-placeInTable(y, x) {
-  const piece = document.createElement('div');
-  piece.classList.add('piece');
-  piece.style.backgroundColor = this.currPlayer.color;
-  piece.style.top = -50 * (y + 2);
+  placeInTable(y, x) {
+    const piece = document.createElement('div');
+    piece.classList.add('piece');
+    piece.style.backgroundColor = this.currPlayer.color;
+    piece.style.top = -50 * (y + 2);
 
-  const spot = document.getElementById(`${y}-${x}`);
-  spot.append(piece);
-}
+    const spot = document.getElementById(`${y}-${x}`);
+    spot.append(piece);
+  }
 
 /** endGame: announce game end */
 
-endGame(msg) {
-  alert(msg);
-  const top = document.querySelector("#column-top");
-  top.removeEventListener("click", this.handleGameClick);
-}
+  endGame(msg) {
+    alert(msg);
+    const top = document.querySelector("#column-top");
+    top.removeEventListener("click", this.handleGameClick);
+  }
 
 /** handleClick: handle click of column top to play piece */
 
@@ -100,7 +100,7 @@ handleClick(evt) {
   const x = +evt.target.id;
 
   // get next spot in column (if none, ignore click)
-  const y = findSpotForCol(x);
+  const y = this.findSpotForCol(x);
   if (y === null) {
     return;
   }
@@ -108,21 +108,21 @@ handleClick(evt) {
   // place piece in board and add to HTML table
   this.board[y][x] = this.currPlayer;
   this.placeInTable(y, x);
-  
+
+  // check for tie
+  if (this.board.every(row => row.every(cell => cell))) {
+    return this.endGame('Tie!');
+  }
+    
   // check for win
   if (this.checkForWin()) {
     this.gameOver = true;
     return this.endGame(`Player ${this.currPlayer.color} won!`);
   }
+
   
-  // check for tie
-  if (this.board.every(row => row.every(cell => cell))) {
-    return endGame('Tie!');
-  }
-    
   // switch players
   this.currPlayer = this.currPlayer === this.players[0] ? this.players[1] : this.players[0];
-
 }
 
 /** checkForWin: check board cell-by-cell for "does a win start here?" */
@@ -160,7 +160,7 @@ checkForWin() {
 }
 
 class Player{
-  constructor(color){
+  constructor(color) {
     this.color = color;
   }
 }
